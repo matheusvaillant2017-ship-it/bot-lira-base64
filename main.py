@@ -4,39 +4,51 @@ import base64
 from io import BytesIO
 from PIL import Image
 
-# Coloque o seu TOKEN aqui
-bot = telebot.TeleBot("SEU_TOKEN_AQUI")
+# 💢 TOKEN DO LiraBase64_v2_bot
+TOKEN = "8213585953:AAG48cfeRmkbduaQ1AztWx-qpQWcTt26PYA"
+
+bot = telebot.TeleBot(TOKEN)
+
+@bot.message_handler(commands=['start'])
+def boas_vindas(message):
+    bot.reply_to(message, "💢 VASCÃO NA ÁREA! \n\nComando: /gerar [descrição]\nExemplo: /gerar um navio pirata realista")
 
 @bot.message_handler(commands=['gerar'])
-def gerar_imagem(message):
+def gerar_imagem_vasco(message):
     query = message.text.replace("/gerar ", "")
-    if not query:
-        bot.reply_to(message, "Mande o que você quer gerar. Ex: /gerar lobo")
+    if not query or query == "/gerar":
+        bot.reply_to(message, "⚠️ Escreve o que você quer gerar, porra! Ex: /gerar favela rio de janeiro")
         return
 
-    bot.send_message(message.chat.id, f"🎨 Gerando '{query}' e convertendo...")
+    bot.send_message(message.chat.id, "🎨 O Gigante está criando e convertendo em Base64... Aguarda aí!")
 
     try:
-        # Gerando imagem de servidor livre (ilimitado)
-        img_url = f"https://pollinations.ai/p/{query.replace(' ', '_')}?width=512&height=512&seed=42"
-        response = requests.get(img_url)
+        # Gerador ILIMITADO e SEM CHAVE
+        prompt_final = f"{query}, high quality, cinematic"
+        img_url = f"https://pollinations.ai/p/{prompt_final.replace(' ', '_')}?width=512&height=512"
         
-        # Converte a imagem recebida em Base64
+        response = requests.get(img_url)
         img = Image.open(BytesIO(response.content))
+        
+        # Converte para Base64 (Texto)
         buffered = BytesIO()
         img.save(buffered, format="PNG")
         img_base64 = base64.b64encode(buffered.getvalue()).decode()
 
-        # Cria o arquivo .txt com o código Base64
-        with open("codigo.txt", "w") as f:
+        # Cria o arquivo de texto
+        nome_arquivo = "base64_gerado.txt"
+        with open(nome_arquivo, "w") as f:
             f.write(img_base64)
 
-        # Envia o arquivo para você no Telegram
-        with open("codigo.txt", "rb") as f:
-            bot.send_document(message.chat.id, f, caption="✅ Tá aí o Base64 ilimitado!")
+        # Envia o arquivo .txt pro Telegram
+        with open(nome_arquivo, "rb") as f:
+            bot.send_document(
+                message.chat.id, 
+                f, 
+                caption=f"✅ Base64 da imagem: {query}\n\n💢 CASARÃO!"
+            )
 
     except Exception as e:
-        bot.reply_to(message, f"Deu ruim: {e}")
+        bot.reply_to(message, f"❌ Deu erro: {e}")
 
 bot.polling()
-
